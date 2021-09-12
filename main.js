@@ -9,64 +9,76 @@ const app = http.createServer((request, response) => {
 
   if(pathname === "/") {
     if(queryData.id === undefined) {
-      const title = "Welcome";
-      const description = "Hello, NodeJS";
+      fs.readdir("./data", (error, fileList) => {
+        const title = "Welcome";
+        const description = "Hello, NodeJS";
 
-      const template = `
-        <!DOCTYPE html>
-          <head>
-            <meta charset="UTF-8">
-            <title>${title}</title>
-          </head>
+        let list = "<ul>";
+        fileList.forEach(fileName => {
+          list += `<li>
+            <a href="/?id=${fileName}">${fileName}</a>
+          </li>`
+        });        
+        list += "</ul>";
 
-          <body>
-            <h1><a href="/">WEB</a></h1>
-            <ul>
-              <li><a href="/?id=HTML">HTML</a></li>
-              <li><a href="/?id=CSS">CSS</a></li>
-              <li><a href="/?id=Javascript">Javascript</a></li>
-            </ul>
+        const template = `
+          <!DOCTYPE html>
+            <head>
+              <meta charset="UTF-8">
+              <title>${title}</title>
+            </head>
 
-            <h2>${title}</h2>
-            <p>${description}</p>
-          </body>
-        </html>
-      `;
+            <body>
+              <h1><a href="/">WEB</a></h1>
+              ${list}
 
-      response.writeHead(200);
-      response.end(template);
+              <h2>${title}</h2>
+              <p>${description}</p>
+            </body>
+          </html>
+        `;
+
+        response.writeHead(200);
+        response.end(template);
+      });
     } else {
-      fs.readFile(
-        `./data/${queryData.id}`,
-        { encoding: "utf-8" },
-        (error, description) => {
-          const title = queryData.id;
+      fs.readdir("./data", (error, fileList) => {
+        let list = "<ul>";
+        fileList.forEach(fileName => {
+          list += `<li>
+            <a href="/?id=${fileName}">${fileName}</a>
+          </li>`;
+        });
+        list += "</ul>";
 
-          const template = `
-            <!DOCTYPE html>
-              <head>
-                <meta charset="UTF-8">
-                <title>WEB - ${title}</title>
-              </head>
+        fs.readFile(
+          `./data/${queryData.id}`,
+          { encoding: "UTF-8" },
+          (error, description) => {
+            const title = queryData.id;
+            
+            const template = `
+              <!DOCTYPE html>
+                <head>
+                  <meta charset="UTF-8">
+                  <title>WEB</title>
+                </head>
 
-              <body>
-                <h1><a href="/">WEB</a></h1>
-                <ul>
-                  <li><a href="/?id=HTML">HTML</a></li>
-                  <li><a href="/?id=CSS">CSS</a></li>
-                  <li><a href="/?id=Javascript">Javascript</a></li>
-                </ul>
+                <body>
+                  <h1><a href="/">WEB</a></h1>
+                  ${list}
 
-                <h2>${title}</h2>
-                <p>${description}</p>
-              </body>
-            </html>
-          `;
+                  <h2>${title}</h2>
+                  <p>${description}</p>
+                </body>
+              </html>
+            `;
 
-          response.writeHead(200);
-          response.end(template);
-        },
-      );
+            response.writeHead(200);
+            response.end(template);
+          },
+        );
+      })
     }
   } else {
     response.writeHead(404);
