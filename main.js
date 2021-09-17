@@ -86,7 +86,7 @@ const app = http.createServer((request, response) => {
         title, 
         list, 
         `
-          <form action="http://localhost/create_process" method="post">
+          <form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p><textarea name="description" placeholder="description"></textarea></p>
             <p><input type="submit"></p>
@@ -112,11 +112,39 @@ const app = http.createServer((request, response) => {
       fs.writeFile(`./data/${title}`, description, { encoding: "utf-8" }, (error) => {
         response.writeHead(302, { Location: `/?id=${title}` });
         response.end();
-        
-        // response.writeHead(200);
-        // response.end("success");
       });
-    })
+    });
+  } else if(pathname === "/update") {
+    fs.readdir("./data", (error, fileList) => {
+      fs.readFile(
+        `./data/${queryData.id}`, 
+        { encoding: "utf-8" }, 
+        (error, description) => {
+          const title = queryData.id;
+          const list = templateList(fileList);
+          const template = templateHTML(
+            title,
+            list,
+            `
+              <form action="/update_process" method="post">
+                <input type="hidden" name="id" value="${title}">
+                <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+                <p>
+                  <textarea name="description" placeholder="description" rows="30" cols="100">
+                    ${description}
+                  </textarea>
+                </p>
+                <p><input type="submit"></p>
+              </form>
+            `,
+            `<a href="/create">create</a> | <a href="/update?id=${title}">update</a>`,
+          );
+
+          response.writeHead(200);
+          response.end(template);
+        }
+      );
+    });
   } else {
     response.writeHead(404);
     response.end("Not Found");
