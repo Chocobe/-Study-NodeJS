@@ -130,9 +130,7 @@ const app = http.createServer((request, response) => {
                 <input type="hidden" name="id" value="${title}">
                 <p><input type="text" name="title" placeholder="title" value="${title}"></p>
                 <p>
-                  <textarea name="description" placeholder="description" rows="30" cols="100">
-                    ${description}
-                  </textarea>
+                  <textarea name="description" placeholder="description" rows="30" cols="100">${description}</textarea>
                 </p>
                 <p><input type="submit"></p>
               </form>
@@ -144,6 +142,23 @@ const app = http.createServer((request, response) => {
           response.end(template);
         }
       );
+    });
+  } else if(pathname === "/update_process") {
+    let body = "";
+
+    request.on("data", data => {
+      body = body.concat(data);
+    });
+
+    request.on("end", () => {
+      const { id, title, description } = qs.parse(body);
+      
+      fs.rename(`./data/${id}`, `./data/${title}`, error => {
+        fs.writeFile(`./data/${title}`, description, { encoding: "utf-8" }, error => {
+          response.writeHead(302, { Location: `/?id=${title}`});
+          response.end();
+        });
+      });
     });
   } else {
     response.writeHead(404);
