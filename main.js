@@ -66,6 +66,21 @@ const app = http.createServer((request, response) => {
         );
       })
     }
+  } else if(pathname === "/create") {
+    fs.readdir("./data", (error, fileList) => {
+      const title = "WEB - create";
+      const list = templateList(fileList);
+      const template = templateHTML(title, list, `
+        <form action="http://localhost/create_process" method="post">
+          <p><input type="text" name="title" placeholder="title"></p>
+          <p><textarea name="description" placeholder="description"></textarea></p>
+          <p><input type="submit"></p>
+        </form>
+      `);
+
+      response.writeHead(200);
+      response.end(template);
+    });
   } else {
     response.writeHead(404);
     response.end("Not Found");
