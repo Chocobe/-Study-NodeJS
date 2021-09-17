@@ -14,6 +14,7 @@ function templateHTML(title, list, body) {
       <body>
         <h1><a href="/">WEB</a></h1>
         ${list}
+        <br/><a href="/create">create</a><br/>
         ${body}
       </body>
     </html>
@@ -93,8 +94,13 @@ const app = http.createServer((request, response) => {
       const post = qs.parse(body);
       const { title, description } = post;
 
-      console.log(`title: ${title}`);
-      console.log(`description: ${description}`);
+      fs.writeFile(`./data/${title}`, description, { encoding: "utf-8" }, (error) => {
+        response.writeHead(302, { Location: `/?id=${title}` });
+        response.end();
+        
+        // response.writeHead(200);
+        // response.end("success");
+      });
     })
   } else {
     response.writeHead(404);
