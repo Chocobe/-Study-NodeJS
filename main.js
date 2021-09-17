@@ -1,5 +1,6 @@
 const http = require("http");
 const url = require("url");
+const qs = require("querystring");
 const fs = require("fs");
 
 function templateHTML(title, list, body) {
@@ -81,6 +82,20 @@ const app = http.createServer((request, response) => {
       response.writeHead(200);
       response.end(template);
     });
+  } else if(pathname === "/create_process") {
+    let body = "";
+
+    request.on("data", data => {
+      body = body.concat(data);
+    });
+
+    request.on("end", () => {
+      const post = qs.parse(body);
+      const { title, description } = post;
+
+      console.log(`title: ${title}`);
+      console.log(`description: ${description}`);
+    })
   } else {
     response.writeHead(404);
     response.end("Not Found");
