@@ -4,6 +4,7 @@ const qs = require("querystring");
 const fs = require("fs");
 const template = require("./lib/template");
 const path = require("path");
+const sanitizeHtml = require("sanitize-html");
 
 const app = http.createServer((request, response) => {
   const _url = request.url;
@@ -37,14 +38,19 @@ const app = http.createServer((request, response) => {
           { encoding: "UTF-8" },
           (error, description) => {
             const title = queryData.id;
+            const sanitizedTitle = sanitizeHtml(title);
+            const sanitizedDescription = sanitizeHtml(description, {
+              allowedTags: ["h1", "h2"],
+            });
+            
             const html = template.html(
-              title, 
+              sanitizedTitle,
               list,
-              `<h2>${title}</h2><p>${description}</p>`,
+              `<h2>${sanitizedTitle}</h2><p>${sanitizedDescription}</p>`,
               `<a href="/create">create</a>
-              | <a href="/update?id=${title}">update</a>
+              | <a href="/update?id=${sanitizedTitle}">update</a>
               <form action="/delete_process" method="post" onsubmit="return confirm('정말로 삭제 하시겠습니까?');">
-                <input type="hidden" name="id" value="${title}">
+                <input type="hidden" name="id" value="${sanitizedTitle}">
                 <input type="submit" value="delete">
               </form>`,
             );
