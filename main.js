@@ -3,36 +3,68 @@ const url = require("url");
 const qs = require("querystring");
 const fs = require("fs");
 
-function templateHTML(title, list, body, controll) {
-  return `
-    <!DOCTYPE html>
-      <head>
-        <meta charset="UTF-8">
-        <title>WEB1 - ${title}</title>
-      </head>
+const template = {
+  html: (title, list, body, controller) => {
+    return `
+      <!DOCTYPE html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${title}</title>
+        </head>
 
-      <body>
-        <h1><a href="/">WEB</a></h1>
-        ${list}
-        ${controll}
-        ${body}
-      </body>
-    </html>
-  `;
-}
+        <body>
+          <h1><a href="/">WEB</a></h1>
+          ${list}
+          ${controller}
+          ${body}
+        </body>
+      </html>
+    `;
+  },
 
-function templateList(fileList) {
-  let list = "<ul>";
+  list: (fileList) => {
+    let list = "<ul>";
 
-  fileList.forEach(fileName => {
-    list = list.concat(`
-      <li><a href="/?id=${fileName}">${fileName}</a></li>
-    `);
-  });
+    fileList.forEach(fileName => {
+      list = list.concat(`
+        <li><a href="/?id=${fileName}">${fileName}</a></li>
+      `);
+    });
 
-  list = list.concat("</ul>");
-  return list;
-}
+    return list.concat("</ul>");
+  },
+};
+
+// function templateHTML(title, list, body, controll) {
+//   return `
+//     <!DOCTYPE html>
+//       <head>
+//         <meta charset="UTF-8">
+//         <title>WEB1 - ${title}</title>
+//       </head>
+
+//       <body>
+//         <h1><a href="/">WEB</a></h1>
+//         ${list}
+//         ${controll}
+//         ${body}
+//       </body>
+//     </html>
+//   `;
+// }
+
+// function templateList(fileList) {
+//   let list = "<ul>";
+
+//   fileList.forEach(fileName => {
+//     list = list.concat(`
+//       <li><a href="/?id=${fileName}">${fileName}</a></li>
+//     `);
+//   });
+
+//   list = list.concat("</ul>");
+//   return list;
+// }
 
 const app = http.createServer((request, response) => {
   const _url = request.url;
@@ -45,8 +77,8 @@ const app = http.createServer((request, response) => {
         const title = "Welcome";
         const description = "Hello, NodeJS";
 
-        const list = templateList(fileList);
-        const template = templateHTML(
+        const list = template.list(fileList);
+        const html = template.html(
           title, 
           list, 
           `<h2>${title}</h2><p>${description}</p>`,
@@ -54,18 +86,18 @@ const app = http.createServer((request, response) => {
         );
         
         response.writeHead(200);
-        response.end(template);
+        response.end(html);
       });
     } else {
       fs.readdir("./data", (error, fileList) => {
-        const list = templateList(fileList);
+        const list = template.list(fileList);
 
         fs.readFile(
           `./data/${queryData.id}`,
           { encoding: "UTF-8" },
           (error, description) => {
             const title = queryData.id;
-            const template = templateHTML(
+            const html = template.html(
               title, 
               list,
               `<h2>${title}</h2><p>${description}</p>`,
@@ -78,7 +110,7 @@ const app = http.createServer((request, response) => {
             );
 
             response.writeHead(200);
-            response.end(template);
+            response.end(html);
           },
         );
       })
@@ -86,8 +118,8 @@ const app = http.createServer((request, response) => {
   } else if(pathname === "/create") {
     fs.readdir("./data", (error, fileList) => {
       const title = "WEB - create";
-      const list = templateList(fileList);
-      const template = templateHTML(
+      const list = template.list(fileList);
+      const html = template.html(
         title, 
         list, 
         `
@@ -101,7 +133,7 @@ const app = http.createServer((request, response) => {
       );
 
       response.writeHead(200);
-      response.end(template);
+      response.end(html);
     });
   } else if(pathname === "/create_process") {
     let body = "";
@@ -126,8 +158,8 @@ const app = http.createServer((request, response) => {
         { encoding: "utf-8" }, 
         (error, description) => {
           const title = queryData.id;
-          const list = templateList(fileList);
-          const template = templateHTML(
+          const list = template.list(fileList);
+          const html = template.html(
             title,
             list,
             `
@@ -144,7 +176,7 @@ const app = http.createServer((request, response) => {
           );
 
           response.writeHead(200);
-          response.end(template);
+          response.end(html);
         }
       );
     });
