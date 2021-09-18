@@ -2,69 +2,7 @@ const http = require("http");
 const url = require("url");
 const qs = require("querystring");
 const fs = require("fs");
-
-const template = {
-  html: (title, list, body, controller) => {
-    return `
-      <!DOCTYPE html>
-        <head>
-          <meta charset="UTF-8">
-          <title>${title}</title>
-        </head>
-
-        <body>
-          <h1><a href="/">WEB</a></h1>
-          ${list}
-          ${controller}
-          ${body}
-        </body>
-      </html>
-    `;
-  },
-
-  list: (fileList) => {
-    let list = "<ul>";
-
-    fileList.forEach(fileName => {
-      list = list.concat(`
-        <li><a href="/?id=${fileName}">${fileName}</a></li>
-      `);
-    });
-
-    return list.concat("</ul>");
-  },
-};
-
-// function templateHTML(title, list, body, controll) {
-//   return `
-//     <!DOCTYPE html>
-//       <head>
-//         <meta charset="UTF-8">
-//         <title>WEB1 - ${title}</title>
-//       </head>
-
-//       <body>
-//         <h1><a href="/">WEB</a></h1>
-//         ${list}
-//         ${controll}
-//         ${body}
-//       </body>
-//     </html>
-//   `;
-// }
-
-// function templateList(fileList) {
-//   let list = "<ul>";
-
-//   fileList.forEach(fileName => {
-//     list = list.concat(`
-//       <li><a href="/?id=${fileName}">${fileName}</a></li>
-//     `);
-//   });
-
-//   list = list.concat("</ul>");
-//   return list;
-// }
+const template = require("./lib/template");
 
 const app = http.createServer((request, response) => {
   const _url = request.url;
