@@ -165,6 +165,22 @@ const app = http.createServer((request, response) => {
         });
       });
     });
+  } else if(pathname === "/delete_process") {
+    let body = "";
+
+    request.on("data", data => {
+      body = body.concat(data);
+    });
+
+    request.on("end", () => {
+      const post = qs.parse(body);
+      const id = post.id;
+
+      fs.unlink(`./data/${id}`, error => {
+        response.writeHead(302, { Location: "/" });
+        response.end();
+      });
+    });
   } else {
     response.writeHead(404);
     response.end("Not Found");
