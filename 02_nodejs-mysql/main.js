@@ -6,6 +6,16 @@ var qs = require('querystring');
 var template = require('./lib/template.js');
 var path = require('path');
 var sanitizeHtml = require('sanitize-html');
+var mysql = require("mysql");
+
+var db = mysql.createConnection({
+  host: "localhost",
+  database: "opentutorials",
+  user: "root",
+  password: "1111",
+});
+
+db.connect();
 
 var app = http.createServer(function(request, response) {
     var _url = request.url;
@@ -14,40 +24,106 @@ var app = http.createServer(function(request, response) {
 
     if(pathname === '/') {
         if(queryData.id === undefined) {
-            fs.readdir('./data', function(error, filelist) {
-                var title = 'Welcome';
-                var description = 'Hello, Node.js';
-                var list = template.list(filelist);
-                var html = template.HTML(title, list,
-                    `<h2>${title}</h2><p>${description}</p>`,
-                    `<a href="/create">create</a>`
+            db.query(`
+                SELECT * FROM topic
+              `,
+              (error, topics) => {
+                const title = "Welcome";
+                const description = "Hello, Node.js";
+                const list = template.list(topics);
+                const html = template.HTML(
+                  title,
+                  list,
+                  `
+                    <h2>${title}</h2>
+                    ${description}
+                  `,
+                  `
+                    <a href="/create">create</a>
+                  `,
                 );
+
                 response.writeHead(200);
                 response.end(html);
-            });
+              },
+            );
+          
+            // fs.readdir('./data', function(error, filelist) {
+            //     var title = 'Welcome';
+            //     var description = 'Hello, Node.js';
+            //     var list = template.list(filelist);
+            //     var html = template.HTML(title, list,
+            //         `<h2>${title}</h2><p>${description}</p>`,
+            //         `<a href="/create">create</a>`
+            //     );
+            //     response.writeHead(200);
+            //     response.end(html);
+            // });
         } else {
-            fs.readdir('./data', function(error, filelist) {
-                var filteredId = path.parse(queryData.id).base;
-                fs.readFile(`data/${filteredId}`, 'utf8', function(err, description) {
-                    var title = queryData.id;
-                    var sanitizedTitle = sanitizeHtml(title);
-                    var sanitizedDescription = sanitizeHtml(description, {
-                        allowedTags:['h1']
-                    });
-                    var list = template.list(filelist);
-                    var html = template.HTML(sanitizedTitle, list,
-                        `<h2>${sanitizedTitle}</h2><p>${sanitizedDescription}</p>`,
-                        `<a href="/create">create</a>
-                        <a href="/update?id=${sanitizedTitle}">update</a>
+            db.query(
+              `SELECT * FROM topic`,
+              (error, topics) => {
+                if(error) {
+                  throw error;
+                }
+                
+                db.query(
+                  `SELECT * FROM topic WHERE id=?`,
+                  [queryData.id],
+                  (error2, topic) => {
+                    if(error2) {
+                      throw error2;
+                    }
+                 
+                    const title = topic[0].title;
+                    const description = topic[0].description;
+                    const list = template.list(topics);
+                    const html = template.HTML(
+                      title,
+                      list,
+                      `
+                        <h2>${title}</h2>
+                        ${description}
+                      `,
+                      `
+                        <a href="/create">create</a>
+                        <a href="/update?id=${queryData.id}">update</a>
                         <form action="delete_process" method="post">
-                            <input type="hidden" name="id" value="${sanitizedTitle}">
-                            <input type="submit" value="delete">
-                        </form>`
+                          <input type="hidden" name="id" value="${queryData.id}" />
+                          <input type="submit" value="delete" />
+                        </form>
+                      `,
                     );
+
                     response.writeHead(200);
                     response.end(html);
-                });
-            });
+                  },
+                )
+              }
+            )
+          
+            // fs.readdir('./data', function(error, filelist) {
+            //     var filteredId = path.parse(queryData.id).base;
+            //     fs.readFile(`data/${filteredId}`, 'utf8', function(err, description) {
+            //         var title = queryData.id;
+            //         var sanitizedTitle = sanitizeHtml(title);
+            //         var sanitizedDescription = sanitizeHtml(description, {
+            //             allowedTags:['h1']
+            //         });
+            //         var list = template.list(filelist);
+            //         var html = template.HTML(sanitizedTitle, list,
+            //             `<h2>${sanitizedTitle}</h2><p>${sanitizedDescription}</p>`,
+            //             `<a href="/create">create</a>
+            //             <a href="/update?id=${sanitizedTitle}">update</a>
+            //             <form action="delete_process" method="post">
+            //                 <input type="hidden" name="id" value="${sanitizedTitle}">
+            //                 <input type="submit" value="delete">
+            //             </form>`
+            //         );
+            //         response.writeHead(200);
+            //         response.end(html);
+            //     });
+            // });
         }
     } else if(pathname === '/create') {
         fs.readdir('./data', function(error, filelist) {
@@ -142,4 +218,4 @@ var app = http.createServer(function(request, response) {
         response.end('Not found');
     }
 });
-app.listen(3000);
+app.listen(80);

@@ -1,22 +1,23 @@
 const mysql = require("mysql");
+
 const connection = mysql.createConnection({
   host: "localhost",
+  database: "opentutorials",
   user: "root",
   password: "1111",
-  database: "opentutorials",
 });
 
 connection.connect();
 
-connection.query(
-  "SELECT * FROM  topic",
+connection.query(`
+    SELECT author.id, title, profile, title, description, created
+    FROM author
+    JOIN topic
+    ON author.id = topic.author_id
+  `,
   (error, results, fields) => {
-    if(error) {
-      console.log(error);
-    }
-
     console.log(results);
-  },
-);
+  }
+)
 
 connection.end();
