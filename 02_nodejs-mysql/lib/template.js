@@ -16,6 +16,7 @@ module.exports = {
         </html>
         `;
     },
+    
     list:function(topics) {
         var list = '<ul>';
         var i = 0;
@@ -25,5 +26,23 @@ module.exports = {
         }
         list = list+'</ul>';
         return list;
-    }
+    },
+
+    authorSelect:function(authors) {
+      let tag = "";
+
+      authors.forEach(author => {
+        tag += `
+          <option value="${author.id}">
+            ${author.NAME}
+          </option>
+        `;
+      });
+
+      return `
+        <select name="author">
+          ${tag}
+        </select>
+      `;
+    },
 }
