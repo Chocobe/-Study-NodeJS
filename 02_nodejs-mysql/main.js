@@ -233,32 +233,42 @@ var app = http.createServer(function(request, response) {
               `,
               [queryData.id],
               (error2, topic) => {
-                const list = template.list(topics);
-                const html = template.HTML(
-                  topic[0].title,
-                  list,
-                  `
-                    <form action="/update_process" method="post">
-                      <input type="hidden" name="id" value="${topic[0].id}" />
-                      <p>
-                        <input type="text" name="title" placeholder="title" value="${topic[0].title}" />
-                      </p>
-                      <p>
-                        <textarea name="description" placeholder="description">${topic[0].description}</textarea>
-                      </p>
-                      <p>
-                        <input type="submit" value="Submit" />
-                      </p>
-                    </form>
-                  `,
-                  `
-                    <a href="/create">create</a>
-                    <a href="/update?id=${topic[0].id}">update</a>
-                  `,
-                );
+                if(error2) {
+                  throw error2;
+                }
 
-                response.writeHead(200);
-                response.end(html);
+                db.query(
+                  `SELECT * FROM author`,
+                  (error3, authors) => {
+                    const list = template.list(topics);
+                    const html = template.HTML(
+                      topic[0].title,
+                      list,
+                      `
+                        <form action="/update_process" method="post">
+                          <input type="hidden" name="id" value="${topic[0].id}" />
+                          <p>
+                            <input type="text" name="title" placeholder="title" value="${topic[0].title}" />
+                          </p>
+                          <p>
+                            <textarea name="description" placeholder="description">${topic[0].description}</textarea>
+                          </p>
+                          ${template.authorSelect(authors, topic[0].author_id)}
+                          <p>
+                            <input type="submit" value="Submit" />
+                          </p>
+                        </form>
+                      `,
+                      `
+                        <a href="/create">create</a>
+                        <a href="/update?id=${topic[0].id}">update</a>
+                      `,
+                    );
+
+                    response.writeHead(200);
+                    response.end(html);
+                  },
+                );
               },
             );
           },
@@ -296,15 +306,15 @@ var app = http.createServer(function(request, response) {
         });
 
         request.on("end", () => {
-          const { title, description, id } = qs.parse(body);
+          const { title, description, id, author } = qs.parse(body);
 
           db.query(
             `
               UPDATE topic
-              SET title=?, description=?, author_id=1
+              SET title=?, description=?, author_id=?
               WHERE id=?
             `,
-            [title, description, id],
+            [title, description, author, id],
             (error, result) => {
               response.writeHead(302, { Location: `/?id=${id}`});
               response.end();
