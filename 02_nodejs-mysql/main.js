@@ -68,7 +68,12 @@ var app = http.createServer(function(request, response) {
                 }
                 
                 db.query(
-                  `SELECT * FROM topic WHERE id=?`,
+                  `
+                    SELECT * FROM topic
+                    LEFT JOIN author
+                    ON topic.author_id = author.id
+                    WHERE topic.id=?
+                  `,
                   [queryData.id],
                   (error2, topic) => {
                     if(error2) {
@@ -84,6 +89,7 @@ var app = http.createServer(function(request, response) {
                       `
                         <h2>${title}</h2>
                         ${description}
+                        <p>by ${topic[0].NAME}</p>
                       `,
                       `
                         <a href="/create">create</a>
@@ -95,6 +101,8 @@ var app = http.createServer(function(request, response) {
                       `,
                     );
 
+                    console.log(topic);
+                    
                     response.writeHead(200);
                     response.end(html);
                   },
