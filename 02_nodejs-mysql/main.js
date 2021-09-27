@@ -137,26 +137,31 @@ var app = http.createServer(function(request, response) {
         db.query(
           `SELECT * FROM topic`,
           (error, topics) => {
-            const title = "Create";
-            const list = template.list(topics);
-            const html = template.HTML(
-              title,
-              list,
-              `
-                <form action="/create_process" method="post">
-                  <p><input type="text" name="title" placeholder="title" /></p>
-                  <p><textarea name="description" placeholder="description"></textarea></p>
-                  <p><input type="submit" value="submit"></p>
-                </form>
-              `,
-              `<a href="/create">create</a>`
-            );
+            db.query(
+              `SELECT * FROM author`,
+              (error2, authors) => {
+                const title = "Create";
+                const list = template.list(topics);
+                const html = template.HTML(
+                  title,
+                  list,
+                  `
+                    <form action="/create_process" method="post">
+                      <p><input type="text" name="title" placeholder="title" /></p>
+                      <p><textarea name="description" placeholder="description"></textarea></p>
+                      ${template.authorSelect(authors)}
+                      <p><input type="submit" value="submit"></p>
+                    </form>
+                  `,
+                  `<a href="/create">create</a>`
+                );
 
-            response.writeHead(200);
-            response.end(html);
-          },
-        );
-      
+                response.writeHead(200);
+                response.end(html);
+              }
+            )
+          });
+
         // fs.readdir('./data', function(error, filelist) {
         //     var title = 'WEB - create';
         //     var list = template.list(filelist);
@@ -187,16 +192,19 @@ var app = http.createServer(function(request, response) {
           db.query(
             `
               INSERT INTO topic (title, description, created, author_id)
-              VALUES (?, ?, NOW(), ")
+              VALUES (?, ?, NOW(), ?)
             `,
-            [payload.title, payload.description, 1],
-            (error, results) => {
+            [payload.title, payload.description, payload.author],
+            (error, result) => {
               if(error) {
                 throw error;
               }
+
+              response.writeHead(302, { Location: `/?id=${result.insertId}`})
+              response.end();
             }
-          )
-        })
+          );
+        });
         
         // var body = '';
         // request.on('data', function(data) {
